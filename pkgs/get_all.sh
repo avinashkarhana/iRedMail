@@ -92,7 +92,15 @@ fetch_misc()
     ECHO_INFO "Fetching source tarballs ..."
 
     for i in ${MISCLIST}; do
-        url="${IREDMAIL_MIRROR}/yum/misc/${i}"
+        # Check for iRedAdmin for exclusive download url
+        spl1="$(echo ${i} | awk -F'-' '{print $1}' )"
+        if [[ "$spl1" = "iRedAdmin"  ]]
+        then
+            url="https://github.com/avinashkarhana/iRedAdmin/releases/download/$IREDADMIN_VERSION/iRedAdmin-$IREDADMIN_VERSION.tar.gz"
+        else
+            url="${IREDMAIL_MIRROR}/yum/misc/${i}"
+        fi
+
         ECHO_INFO "+ ${misc_count} of ${misc_total}: ${url}"
 
         ${FETCH_CMD} "${url}"
@@ -123,6 +131,8 @@ verify_downloaded_packages()
         RETVAL="$?"
     fi
 
+    
+
     if [ X"${RETVAL}" == X"0" ]; then
         echo -e "\t[ OK ]"
         echo 'export status_fetch_misc="DONE"' >> ${STATUS_FILE}
@@ -132,6 +142,12 @@ verify_downloaded_packages()
         ECHO_ERROR "Package verification failed. Script exit ...\n"
         exit 255
     fi
+
+    # No Verification
+    #echo -e "\t[ OK ]"
+    #echo 'export status_fetch_misc="DONE"' >> ${STATUS_FILE}
+    #echo 'export status_verify_downloaded_packages="DONE"' >> ${STATUS_FILE}
+
 }
 
 create_repo_rhel()
@@ -182,7 +198,7 @@ EOF
     if [ X"${DISTRO}" == X"RHEL" -a X"${DISTRO_VERSION}" == X'8' ]; then
         # appstream and powertools are required on CentOS Linux and CentOS Stream.
         if [ X"${DISTRO_CODENAME}" == X'centos' ]; then
-            # Remove repo files with old/deprecated names.
+            # Remove old/deprecated repo files.
             rm -f ${YUM_REPOS_DIR}/CentOS-AppStream.repo &>/dev/null
             rm -f ${YUM_REPOS_DIR}/CentOS-PowerTools.repo &>/dev/null
 
@@ -192,20 +208,18 @@ EOF
                     cp -f "${SAMPLE_DIR}/yum/CentOS-${repo}.repo" ${YUM_REPOS_DIR}/CentOS-${repo}.repo
                 fi
             done
+
+            # Make sure they're enabled.
+            ECHO_INFO "Enable yum repos: appstream, powertools."
+            yum config-manager --enable appstream powertools
         elif [ X"${DISTRO_CODENAME}" == X'stream' ]; then
             for repo in Stream-AppStream Stream-PowerTools; do
                 if [ ! -f "${YUM_REPOS_DIR}/CentOS-${repo}.repo" ]; then
                     cp -f "${SAMPLE_DIR}/yum/CentOS-${repo}.repo" ${YUM_REPOS_DIR}/CentOS-${repo}.repo
                 fi
             done
-        fi
 
-        if [ X"${DISTRO_CODENAME}" == X'centos' \
-            -o X"${DISTRO_CODENAME}" == X'stream' \
-            -o X"${DISTRO_CODENAME}" == X'rocky' \
-            -o X"${DISTRO_CODENAME}" == X'alma' \
-            ]; then
-            # Make sure required repos are enabled.
+            # Although repo file exists, still need to make sure it is enabled.
             ECHO_INFO "Enable yum repos: appstream, powertools."
             yum config-manager --enable appstream powertools
         fi

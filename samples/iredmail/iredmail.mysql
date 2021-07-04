@@ -45,6 +45,38 @@ CREATE TABLE IF NOT EXISTS admin (
 ) ENGINE=InnoDB;
 
 --
+-- Initialize api table
+--
+CREATE TABLE api (
+  `kid` int(11) NOT NULL,
+  `api_description` varchar(256) DEFAULT NULL,
+  `api_key` varchar(256) NOT NULL,
+  `expiry_date_time` datetime NOT NULL DEFAULT current_timestamp(),
+  `is_enabled` int(1) NOT NULL DEFAULT 1,
+  `isglobaladminapi` int(1) NOT NULL DEFAULT 0,
+  `creation_timestamp` datetime NOT NULL DEFAULT current_timestamp(),
+  `last_update_timestamp` datetime NOT NULL DEFAULT current_timestamp(),
+  `generated_by` varchar(256) NOT NULL,
+  `last_updated_by` varchar(256) DEFAULT NULL,
+  `settings` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Indexes for table `api`
+--
+ALTER TABLE `api`
+  ADD PRIMARY KEY (`kid`),
+  ADD UNIQUE KEY `UNIQUE` (`api_key`);
+
+--
+-- AUTO_INCREMENT for table `api`
+--
+ALTER TABLE `api`
+  MODIFY `kid` int(11) NOT NULL AUTO_INCREMENT;
+
+
+
+--
 -- Table structure for table alias
 --
 CREATE TABLE IF NOT EXISTS alias (
