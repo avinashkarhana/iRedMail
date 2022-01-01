@@ -216,14 +216,18 @@ CREATE TABLE mailbox (
     "enablelib-storage" INT2 NOT NULL DEFAULT 1,
     "enablequota-status" INT2 NOT NULL DEFAULT 1,
     "enableindexer-worker" INT2 NOT NULL DEFAULT 1,
-    enablelmtp INT2 NOT NULL DEFAULT 1,
-    enabledsync INT2 NOT NULL DEFAULT 1,
-    enablesogo INT2 NOT NULL DEFAULT 1,
+    enablelmtp              INT2 NOT NULL DEFAULT 1,
+    enabledsync             INT2 NOT NULL DEFAULT 1,
+    enablesogo              INT2 NOT NULL DEFAULT 1,
+
+    -- Character is required, not int.
+    enablesogowebmail       CHAR(1) NOT NULL DEFAULT 'y',
+    enablesogocalendar      CHAR(1) NOT NULL DEFAULT 'y',
+    enablesogoactivesync    CHAR(1) NOT NULL DEFAULT 'y',
+
     -- Must be set to NULL if it's not restricted.
     allow_nets TEXT DEFAULT NULL,
-    lastlogindate TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()::TIMESTAMP WITHOUT TIME ZONE,
-    lastloginipv4 INET NOT NULL DEFAULT '0.0.0.0',
-    lastloginprotocol CHAR(255) NOT NULL DEFAULT '',
+
     disclaimer TEXT NOT NULL DEFAULT '',
     -- Store per-user settings. Used in iRedAdmin-Pro.
     settings TEXT NOT NULL DEFAULT '',

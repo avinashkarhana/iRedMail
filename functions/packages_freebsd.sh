@@ -49,7 +49,7 @@ install_all()
     freebsd_make_conf_add 'WANT_OPENLDAP_SASL' "YES"
     freebsd_make_conf_add 'WANT_PGSQL_VER' "${PGSQL_VERSION}"
     freebsd_make_conf_add 'WANT_BDB_VER' "${PREFERRED_BDB_VER}"
-    freebsd_make_conf_add 'DEFAULT_VERSIONS' "ssl=openssl python=${PREFERRED_PY3_VER} python3=${PREFERRED_PY3_VER} pgsql=${PGSQL_VERSION} php=7.4 mysql=10.5m perl5=5.32"
+    freebsd_make_conf_add 'DEFAULT_VERSIONS' "ssl=openssl python=${PREFERRED_PY3_VER} python3=${PREFERRED_PY3_VER} pgsql=${PGSQL_VERSION} php=7.4 mysql=10.5m perl5=5.34"
 
     freebsd_make_conf_plus_option 'OPTIONS_SET' 'SASL'
     freebsd_make_conf_plus_option 'OPTIONS_UNSET' 'X11'
@@ -78,7 +78,7 @@ install_all()
         dns_py-dnspython \
         ftp_curl \
         mail_spamassassin \
-        lang_perl5.32 \
+        lang_perl5.34 \
         lang_php${PREFERRED_PHP_VER} \
         lang_php${PREFERRED_PHP_VER}-extensions \
         www_mod_php${PREFERRED_PHP_VER} \
@@ -89,7 +89,6 @@ install_all()
         mail_postfix \
         mail_roundcube \
         net_openldap${PREFERRED_OPENLDAP_VER}-client \
-        net_openldap${PREFERRED_OPENLDAP_VER}-sasl-client \
         net_openldap${PREFERRED_OPENLDAP_VER}-server \
         net_openslp \
         net_py-ldap \
@@ -161,7 +160,7 @@ OPTIONS_FILE_UNSET+=SCRAM
 EOF
 
     # Perl. REQUIRED.
-    cat > /var/db/ports/lang_perl5.32/options <<EOF
+    cat > /var/db/ports/lang_perl5.34/options <<EOF
 OPTIONS_FILE_UNSET+=DEBUG
 OPTIONS_FILE_UNSET+=DOT_INC
 OPTIONS_FILE_UNSET+=DTRACE
@@ -234,13 +233,6 @@ OPTIONS_FILE_UNSET+=FETCH
 OPTIONS_FILE_UNSET+=GSSAPI
 EOF
 
-    cat > /var/db/ports/net_openldap${PREFERRED_OPENLDAP_VER}-sasl-client/options <<EOF
-OPTIONS_FILE_UNSET+=DEBUG
-OPTIONS_FILE_UNSET+=DOCS
-OPTIONS_FILE_UNSET+=FETCH
-OPTIONS_FILE_UNSET+=GSSAPI
-EOF
-
     # No options for MySQL server.
     # PostgreSQL
     cat > /var/db/ports/databases_postgresql${PGSQL_VERSION}-server/options <<EOF
@@ -308,7 +300,7 @@ EOF
     ALL_PORTS="${ALL_PORTS} devel/py-Jinja2 net/py-netifaces security/py-bcrypt www/py-requests"
 
     if [ X"${BACKEND}" == X'OPENLDAP' ]; then
-        ALL_PORTS="${ALL_PORTS} net/openldap${PREFERRED_OPENLDAP_VER}-sasl-client net/openldap${PREFERRED_OPENLDAP_VER}-server"
+        ALL_PORTS="${ALL_PORTS} net/openldap${PREFERRED_OPENLDAP_VER}-server"
         ALL_PORTS="${ALL_PORTS} databases/mariadb${PREFERRED_MARIADB_VER}-server"
 
     elif [ X"${BACKEND}" == X'MYSQL' ]; then

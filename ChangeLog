@@ -1,9 +1,85 @@
+iRedMail-1.5.1:
+    * Updated packages:
+        + Roundcube webmail -> 1.5.2.
+          Addresses one XSS security fix, also fixes some minor issues.
+
+iRedMail-1.5.0:
+    * Supports new distribution releases:
+        + OpenBSD 7.0
+
+    * DROPPED distribution release:
+        - CentOS 7, CentOS 8. Please use CentOS Stream 8 or Rocky Linux 8 instead.
+            - CentOS 7 is too old.
+            - CentOS 8 is end-of-life after Dec 31, 2021.
+        - Debian 10. Please use Debian 11 instead.
+            - Debian 10 enters LTS on July 2022. "Debian LTS is not handled by
+              the Debian security team, but by a separate group of volunteers
+              and companies interested in making it a success."
+        - Ubuntu 18.04. Please use Ubuntu 20.04 instead.
+            - Users chose 20.04 more than 18.04, so better just let it go.
+
+    * Improvements:
+        + Nginx: Greatly improve the performance of keep-alive connections over
+          SSL by enabling `ssl_session_cache`.
+          See also #136, thanks to @ludovicandrieux.
+        + Nginx: Enable TLSv1.3 by default.
+          See also #137, thanks to @ludovicandrieux.
+        + Nginx/Dovecot: Add new ssl cipher: EECDH+CHACHA20, remove weak one: AES256+EDH.
+          See also #138, thanks to @ludovicandrieux.
+        + Postfix now enables smtps (port 465) by default.
+        + Fail2ban: Add one more rule to catch auth error in Postfix log file.
+        + SOGo is now available on Debian 11 (bullseye). Thanks to SOGo team.
+
+    * Fixed issues:
+        - Updating password in Roundcube may fail with error
+          `Encryption function missing`.
+
+    * Updated packages:
+        + Roundcube webmail -> 1.5.1. Note: PHP 5.5 or later is required.
+        + mlmmjadmin -> 3.1.3
+        + netdata -> 1.32.1
+        + iRedAPD -> 5.0.4
+        + iRedAdmin -> 1.6
+        + [OpenBSD] fail2ban -> 0.11.2
+        + [OpenBSD] uwsgi -> 2.0.20
+
+iRedMail-1.4.2:
+    * Improvements:
+        - Remove unused LDAP attribute in iredmail.schema:
+            - lastLoginDate
+            - lastLoginIP
+            - lastLoginProtocol
+
+        - Remove unused sql columns in `vmail` database:
+            - mailbox.lastlogindate
+            - mailbox.lastloginipv4
+            - mailbox.lastloginprotocol
+
+    * Fixed issues:
+        - Incorrect PostgreSQL column types in `vmail` and `sogo` databases.
+
 iRedMail-1.4.1:
+    * Supports new distribution releases:
+        + Debian 11 (bullseye)
+        + FreeBSD 13.0
+
+    * Improvements:
+        + Introduce new LDAP attribute/value pairs and SQL columns used to
+          enable or disable per-user SOGo webmail, calendar and activesync
+          services.
+        + Add some ban rules in Amavisd:
+            + ALLOW_MS_OFFICE: Allow all Microsoft Office documents.
+            + ALLOW_MS_WORD: Allow Microsoft Word documents (.doc, .docx).
+            + ALLOW_MS_EXCEL: Allow Microsoft Excel documents (.xls, .xlsx).
+            + ALLOW_MS_PPT: Allow Microsoft PowerPoint documents (.ppt, .pptx).
+
     * Fixed issues:
         - Allow more sendgrid HELO hostnames.
           Thanks to Jim Nelin for the feedback.
 
     * Updated packages:
+        + iRedAdmin -> 1.5
+        + iRedAPD -> 5.0.3
         + netdata -> 1.31.0
         + mlmmjadmin -> 3.1.2
     

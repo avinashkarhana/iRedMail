@@ -22,7 +22,7 @@ rcm_install()
         ECHO_DEBUG "Set correct permission for Roundcubemail: ${RCM_HTTPD_ROOT}."
         chown -R ${SYS_USER_ROOT}:${SYS_GROUP_ROOT} ${RCM_HTTPD_ROOT}
         chown -R ${HTTPD_USER}:${HTTPD_GROUP} ${RCM_HTTPD_ROOT}/{temp,logs}
-        chmod 0000 ${RCM_HTTPD_ROOT}/{CHANGELOG,INSTALL,LICENSE,README*,UPGRADING,installer,SQL}
+        chmod 0000 ${RCM_HTTPD_ROOT}/{CHANGELOG.md,INSTALL,LICENSE,README*,UPGRADING,installer,SQL}
     fi
 
     # Copy sample config files.
@@ -46,7 +46,7 @@ rcm_initialize_db()
     if [ X"${BACKEND}" == X'OPENLDAP' -o X"${BACKEND}" == X'MYSQL' ]; then
         ${MYSQL_CLIENT_ROOT} <<EOF
 -- Create database and grant privileges
-CREATE DATABASE ${RCM_DB_NAME} DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE ${RCM_DB_NAME} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 GRANT ALL ON ${RCM_DB_NAME}.* TO "${RCM_DB_USER}"@"${MYSQL_GRANT_HOST}" IDENTIFIED BY '${RCM_DB_PASSWD}';
 -- GRANT ALL ON ${RCM_DB_NAME}.* TO "${RCM_DB_USER}"@"${HOSTNAME}" IDENTIFIED BY '${RCM_DB_PASSWD}';
 
@@ -222,6 +222,7 @@ rcm_plugin_password()
     # Require the new password to contain a letter and punctuation character
     perl -pi -e 's#(.*password_require_nonalpha.*=).*#${1} true;#' config.inc.php
     perl -pi -e 's#(.*password_log.*=).*#${1} true;#' config.inc.php
+    perl -pi -e 's#(.*password_algorithm.*=).*#${1} "dovecot";#' config.inc.php
 
     # Roundcube uses scheme name in lower cases
     export default_password_scheme="$(echo ${DEFAULT_PASSWORD_SCHEME} | tr '[A-Z]' '[a-z]')"
@@ -250,7 +251,7 @@ rcm_plugin_password()
         perl -pi -e 's#(.*password_driver.*=).*#${1} "sql";#' config.inc.php
         perl -pi -e 's#(.*password_db_dsn.*= )(.*)#${1}"$ENV{PHP_CONN_TYPE}://$ENV{RCM_DB_USER}:$ENV{RCM_DB_PASSWD}\@$ENV{SQL_SERVER_ADDRESS}/$ENV{VMAIL_DB_NAME}";#' config.inc.php
 
-        perl -pi -e 's#(.*password_query.*=).*#${1} "UPDATE mailbox SET password=%D,passwordlastchange=NOW() WHERE username=%u";#' config.inc.php
+        perl -pi -e 's#(.*password_query.*=).*#${1} "UPDATE mailbox SET password=%P,passwordlastchange=NOW() WHERE username=%u";#' config.inc.php
 
     elif [ X"${BACKEND}" == X'OPENLDAP' ]; then
         perl -pi -e 's#(.*password_confirm_current.*=).*#${1} true;#' config.inc.php

@@ -22,7 +22,7 @@
 
 export PROG_NAME='iRedMail'
 export PROG_NAME_LOWERCASE='iredmail'
-export PROG_VERSION='1.4.0'
+export PROG_VERSION='1.5.1'
 
 export DATE="$(/bin/date +%Y.%m.%d.%H.%M.%S)"
 
@@ -240,22 +240,25 @@ export UNSUPPORTED_RELEASE='NO'
 if [ X"${KERNEL_NAME}" == X'LINUX' ]; then
     export DISTRO_VERSION=$(awk -F'"' '/^VERSION_ID=/ {print $2}' /etc/os-release)
 
-    # Debian: 10: buster
-    # Ubuntu: 18.04: bionic, 20.04: focal
+    # Debian:
+    #   - 11: bullseye
+    # Ubuntu:
+    #   - 20.04: focal
     export DISTRO_CODENAME=$(awk -F'=' '/^VERSION_CODENAME=/ {print $2}' /etc/os-release)
 
     # Directory of RC scripts.
     export DIR_RC_SCRIPTS='/etc/init.d'
 
     if [ -f /etc/redhat-release ]; then
-        # RHEL/CentOS
+        # RHEL/CentOS/Rocky/Alma
         export DISTRO='RHEL'
 
         # RedHat has minor version number in `VERSION_ID` line, e.g. `VERSION_ID="8.3"`.
         export DISTRO_VERSION="$(echo ${DISTRO_VERSION} | awk -F'.' '{print $1}')"
 
-        # Get distribution version
-        if [[ X"${DISTRO_VERSION}" != X'7' ]] && [[ X"${DISTRO_VERSION}" != X'8' ]]; then
+        if [[ X"${DISTRO_VERSION}" == X'8' ]]; then
+            export CMD_UWSGI='/usr/local/bin/uwsgi'
+        else
             export UNSUPPORTED_RELEASE='YES'
         fi
 
@@ -265,10 +268,11 @@ if [ X"${KERNEL_NAME}" == X'LINUX' ]; then
         elif [ -e /etc/almalinux-release ]; then
             export DISTRO_CODENAME='alma'
         elif [ -e /etc/centos-release ]; then
+            # CentOS Stream is ok, but not CentOS Linux 7 / 8.
             if grep -i 'CentOS Stream release' /etc/centos-release &>/dev/null; then
                 export DISTRO_CODENAME='stream'
             else
-                export DISTRO_CODENAME='centos'
+                export UNSUPPORTED_RELEASE='YES'
             fi
         else
             if grep -i '^Red Hat Enterprise Linux' /etc/redhat-release &>/dev/null; then
@@ -279,23 +283,20 @@ if [ X"${KERNEL_NAME}" == X'LINUX' ]; then
             fi
         fi
 
-        if [ X"${DISTRO_VERSION}" == X'8' ]; then
-            # Installed with pip3.
-            export CMD_UWSGI='/usr/local/bin/uwsgi'
-        fi
     elif [ -f /etc/lsb-release ] && grep -i 'DISTRIB_ID=Ubuntu' /etc/lsb-release &>/dev/null; then
         # Ubuntu
         export DISTRO='UBUNTU'
 
-        # Unsupported releases: 16.x, 17.x, 18.10, 19.x
-        if echo "${DISTRO_VERSION}" | grep -E '^(16|17|18\.10|19\.|21\.)' &>/dev/null ; then
+        # Unsupported releases: 16.x, 17.x, 18.x, 19.x
+        if echo "${DISTRO_VERSION}" | grep -E '^(16|17|18|19\.|21\.)' &>/dev/null ; then
             export UNSUPPORTED_RELEASE='YES'
         fi
     elif [ -f /etc/debian_version ]; then
         # Debian
         export DISTRO='DEBIAN'
 
-        if [[ X"${DISTRO_VERSION}" != X'9' ]] && [[ X"${DISTRO_VERSION}" != X'10' ]]; then
+        echo "${DISTRO_VERSION}" | grep -E '^(10|11)$' &>/dev/null
+        if [[ $? != 0 ]]; then
             export UNSUPPORTED_RELEASE='YES'
         fi
     else
@@ -336,8 +337,8 @@ elif [ X"${KERNEL_NAME}" == X'OPENBSD' ]; then
     export CMD_PYTHON3='/usr/local/bin/python3'
     export CMD_PIP3="pip${PYTHON_VERSION}"
 
-    # Unsupported release: 6.7 and earlier versions.
-    if echo "${DISTRO_VERSION}" | grep '^6.[01234567]' &>/dev/null ; then
+    # Unsupported release: 6.x and earlier versions.
+    if echo "${DISTRO_VERSION}" | grep '^6\.' &>/dev/null ; then
         export UNSUPPORTED_RELEASE='YES'
     fi
 else
@@ -454,9 +455,6 @@ if [ X"${DISTRO}" == X'RHEL' ]; then
     export PKG_DIALOG="dialog"
     export PKG_BZIP2="bzip2"
 
-    if [ X"${DISTRO_VERSION}" == X'7' ]; then
-        export UWSGI_PY3_PLUGIN_NAME='python36'
-    fi
 elif [ X"${DISTRO}" == X'DEBIAN' -o X"${DISTRO}" == X'UBUNTU' ]; then
     # Ubuntu & Debian.
     export DEBIAN_FRONTEND='noninteractive'
@@ -606,7 +604,7 @@ export SSL_DH1024_PARAM_FILE="${SSL_FILE_DIR}/dh2048_param.pem"
 
 # use of the most secure ciphers first and gradually fall back to
 # less-preferred ciphers should the client not support them.
-export SSL_CIPHERS='EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH'
+export SSL_CIPHERS='EECDH+CHACHA20:EECDH+AESGCM:EDH+AESGCM:AES256+EECDH'
 
 # SSL key.
 export OPENSSL_CONF="${SSL_FILE_DIR}/openssl.cnf"
